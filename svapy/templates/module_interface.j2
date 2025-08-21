@@ -1,0 +1,116 @@
+import os
+from datetime import datetime
+
+def drive_{{ module_name }}({% for port in input_ports %}{{ port }}_seq{% if not loop.last %}, {% endif %}{% endfor %}{% if input_ports and output_ports %}, {% endif %}{% for port in output_ports %}{{ port }}_seq=None{% if not loop.last %}, {% endif %}{% endfor %}):
+    # Ensure sequences have equal length
+    non_none_seqs = []
+    # Collect all non-None sequences
+{% for port in input_ports %}
+    if {{ port }}_seq is not None:
+        non_none_seqs.append({{ port }}_seq)
+{% endfor %}
+{% for port in output_ports %}
+    if {{ port }}_seq is not None:
+        non_none_seqs.append({{ port }}_seq)
+{% endfor %}
+    
+    if non_none_seqs:
+        num_cycles = min(len(seq) for seq in non_none_seqs)
+    else:
+        num_cycles = 0  # No sequences provided
+    
+    # Trim sequences to min length
+{% for port in input_ports %}
+    if {{ port }}_seq is not None:
+        {{ port }}_seq = {{ port }}_seq[:num_cycles]
+{% endfor %}
+{% for port in output_ports %}
+    if {{ port }}_seq is not None:
+        {{ port }}_seq = {{ port }}_seq[:num_cycles]
+{% endfor %}
+
+    # Prepare testbench folder and filename
+    tb_dir = os.path.join('gen', 'tests')
+    os.makedirs(tb_dir, exist_ok=True)
+    # Create dump directory for VCD files
+    dump_dir = os.path.join('gen', 'dump')
+    os.makedirs(dump_dir, exist_ok=True)
+    base = '{{ module_name }}_tb'
+    existing = os.listdir(tb_dir)
+    idx = 0
+    while f'{base}_{idx}.sv' in existing:
+        idx += 1
+    tb_name = f'{base}_{idx}.sv'
+    tb_path = os.path.join(tb_dir, tb_name)
+    # VCD file path
+    vcd_name = f'{base}_{idx}.vcd'
+    vcd_path = os.path.join(dump_dir, vcd_name)
+
+    # Write testbench file
+    with open(tb_path, 'w') as f:
+        f.write('// Auto-generated testbench for {{ module_name }} on ' + str(datetime.now().isoformat()) + '\n')
+        f.write('`timescale 1ns/1ps\n')
+        f.write('module {{ module_name }}_tb;\n')
+        
+        # Signal declarations
+{% for port, info in ports_info.items() %}
+        {% if info.width > 1 %}
+        f.write('    logic [{{ info.width-1 }}:0] {{ port }};\n')
+        {% else %}
+        f.write('    logic {{ port }};\n')
+        {% endif %}
+{% endfor %}
+        
+        f.write('    integer cycle;  // Test cycle counter\n')
+        
+        # Instantiate DUT
+        f.write('\n    // Instantiate DUT\n')
+        f.write('    {{ module_name }} dut ({% for port in all_ports %}.{{ port }}({{ port }}){% if not loop.last %}, {% endif %}{% endfor %});\n')
+        
+        # Add VCD dumping
+        f.write('\n    // VCD Dumping\n')
+        f.write('    initial begin\n')
+        f.write('        $dumpfile("' + vcd_path + '");\n')
+        f.write('        $dumpvars(0, {{ module_name }}_tb);\n')
+        f.write('    end\n')
+        
+        f.write('\n    initial begin\n')
+        f.write('        cycle = 0;  // Initialize counter\n')
+        
+        # Generate test vectors
+        f.write('\n        // Generate test vectors\n')
+        f.write('        for (cycle = 0; cycle < ' + str(num_cycles) + '; cycle = cycle + 1) begin\n')
+        
+        # Input value assignments - generate static assignments for each cycle
+        for cycle in range(num_cycles):
+            f.write('            // Cycle ' + str(cycle) + '\n')
+{% for port in input_ports %}
+            {% if ports_info[port].width == 1 %}
+            f.write('            {{ port }} = 1' + "'" + 'b' + str({{ port }}_seq[cycle]) + ';\n')
+            {% else %}
+            f.write('            {{ port }} = {{ ports_info[port].width }}' + "'" + 'd' + str({{ port }}_seq[cycle]) + ';\n')
+            {% endif %}
+{% endfor %}
+            
+            # Output value assertions only if sequence is not None
+{% for port in output_ports %}
+            f.write('            // Check for {{ port }} if sequence is provided\n')
+            {% if ports_info[port].width == 1 %}
+            f.write('            if ({{ port }} !== 1' + "'" + 'b' + str({{ port }}_seq[cycle]) + ') begin\n')
+            f.write('                $error("Cycle %0d: {{ port }}: expected=%0d, actual=%0d", cycle, 1' + "'" + 'b' + str({{ port }}_seq[cycle]) + ', {{ port }});\n')
+            {% else %}
+            f.write('            if ({{ port }} !== {{ ports_info[port].width }}' + "'" + 'd' + str({{ port }}_seq[cycle]) + ') begin\n')
+            f.write('                $error("Cycle %0d: {{ port }}: expected=%0d, actual=%0d", cycle, {{ ports_info[port].width }}' + "'" + 'd' + str({{ port }}_seq[cycle]) + ', {{ port }});\n')
+            {% endif %}
+            f.write('            end\n')
+{% endfor %}
+            
+            f.write('            #1;  // Wait for signals to propagate\n')
+        
+        f.write('        end\n')
+        
+        f.write('        $finish;\n')
+        f.write('    end\nendmodule\n')
+    
+    print(f'Testbench generated: {tb_path}')
+    print(f'VCD dump file: {vcd_path}')
