@@ -1,0 +1,48 @@
+# Auto-generated Hypothesis test for module {{ module_name }}
+import os
+import pytest
+import hypothesis.strategies as st
+from hypothesis import given, settings, HealthCheck
+from {{ module_name }}_interface import drive_{{ module_name }}
+
+# Hypothesis configuration
+@settings(
+    max_examples=20,
+    deadline=None,
+    suppress_health_check=[HealthCheck.too_slow, HealthCheck.function_scoped_fixture],
+)
+@given(
+{% for port in input_ports %}
+    {% if ports_info[port].width == 1 %}
+    {{ port }}_seq=st.lists(st.booleans(), min_size=10, max_size=100),
+    {% else %}
+    {{ port }}_seq=st.lists(st.integers(min_value=0, max_value={{ port_max_values[port] }}), min_size=10, max_size=100),
+    {% endif %}
+{% endfor %}
+{% for port in output_ports %}
+    {% if ports_info[port].width == 1 %}
+    {{ port }}_seq=st.just([0]*100){% if not loop.last %},{% endif %}
+    {% else %}
+    {{ port }}_seq=st.just([0]*100){% if not loop.last %},{% endif %}
+    {% endif %}
+{% endfor %}
+)
+def test_{{ module_name }}({% for port in all_ports %}{{ port }}_seq{% if not loop.last %}, {% endif %}{% endfor %}):
+{% for port in input_ports %}
+    {% if ports_info[port].width == 1 %}
+    # Convert boolean to 0/1 for {{ port }}
+    {{ port }}_seq = [1 if x else 0 for x in {{ port }}_seq]
+    {% endif %}
+{% endfor %}
+
+    # Ensure all sequences have same length
+    num_cycles = min(len(seq) for seq in [{% for port in all_ports %}{{ port }}_seq{% if not loop.last %}, {% endif %}{% endfor %}])
+{% for port in all_ports %}
+    {{ port }}_seq = {{ port }}_seq[:num_cycles]
+{% endfor %}
+
+    # Generate testbench with sequences
+    drive_{{ module_name }}({% for port in all_ports %}{{ port }}_seq{% if not loop.last %}, {% endif %}{% endfor %})
+
+if __name__ == '__main__':
+    pytest.main([__file__])

@@ -1,0 +1,23 @@
+"""{{ module_name }} Module
+
+Hardware description for the {{ module_name }} Verilog module.
+
+Ports:
+| Port        | Direction   | Width  |
+|-------------|-------------|--------|
+{% for port, info in ports_info.items()|sort %}
+| {{ port.ljust(12) }}| {{ info.direction.__name__.ljust(12) }}| {{ (info.width|string + "-bit").ljust(7) }}|
+{% endfor %}
+
+Functional Description:
+    [Add detailed description of module functionality here]
+
+Parameters:
+    [List any module parameters here]
+
+Timing Characteristics:
+    [Add timing requirements and characteristics]
+"""
+
+
+
