@@ -168,6 +168,22 @@ endmodule
 
 ## Development
 
+### Testing
+
+The project includes comprehensive tests:
+
+```bash
+# Run all tests
+make test-all
+
+# Run specific test types
+make test-unit      # Unit tests only
+make test-integration  # Integration tests only
+make test-lint      # Code linting
+```
+
+See [tests/README.md](tests/README.md) for detailed testing information.
+
 ### Adding Custom Test Patterns
 
 Svapy is designed to be extensible. You can:
@@ -181,7 +197,19 @@ Svapy is designed to be extensible. You can:
 1. Fork the repository
 2. Create a feature branch
 3. Add tests for new functionality
-4. Submit a pull request
+4. Ensure all tests pass: `make test-all`
+5. Submit a pull request
+
+## CI/CD
+
+The project uses GitHub Actions for continuous integration:
+
+- **Automated Testing**: Runs on every push and pull request
+- **Multi-Python Support**: Tests on Python 3.12 and 3.13
+- **Code Coverage**: Generates coverage reports
+- **Linting**: Automated code quality checks
+- **Build Verification**: Validates generated code
+- **Automated Releases**: Creates releases on main branch pushes
 
 ## License
 
