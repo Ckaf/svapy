@@ -18,7 +18,7 @@ Svapy creates the foundation for property-based testing of your Verilog modules:
 
 - **Test Infrastructure Generation**: Svapy analyzes your module and generates the testing framework - you focus on defining properties
 - **Property-Based Testing Foundation**: Uses Hypothesis to generate thousands of test vectors, while you specify what properties to verify
-- **Waveform Analysis**: Generates VCD files for detailed signal analysis and debugging
+- **Simplified Testbenches**: Clean, minimal SystemVerilog testbenches with automatic VCD waveform generation
 - **Multiple Test Strategies**: Supports different input generation strategies (random, constrained, etc.)
 - **Extensible Architecture**: Easy to add custom test patterns and verification strategies
 
