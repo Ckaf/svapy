@@ -1,9 +1,49 @@
+# Dependencies
 poetry.lock
+
+# Build artifacts
 /build/
-**/__pycache__/
-**/__init__.py
+/dist/
+*.egg-info/
+
+# Generated files
 /gen/
+/venv/
+.env
+
+# Python cache
+**/__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Testing
 /.hypothesis/
 /.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Temporary files
 parser.out
 parsetab.py
+*.tmp
+*.temp
+
+# Poetry
+poetry.lock
