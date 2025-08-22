@@ -10,7 +10,7 @@ ifeq ($(wildcard $(BUILD_DIR)),)
   $(shell mkdir -p $(BIN_DIR))
 endif
 
-.PHONY: all clean sim generate test python-test help
+.PHONY: all clean sim generate test python-test help test-unit test-integration test-lint test-all
 
 # Default target
 all: generate sim
@@ -18,15 +18,20 @@ all: generate sim
 # Help target
 help:
 	@echo "Available targets:"
-	@echo "  generate     - Generate test files from Verilog module"
-	@echo "  sim          - Compile and run SystemVerilog simulations"
-	@echo "  python-test  - Run Python property-based tests"
-	@echo "  test         - Run both Python tests and SystemVerilog simulations"
-	@echo "  clean        - Clean build artifacts"
+	@echo "  generate       - Generate test files from Verilog module"
+	@echo "  sim            - Compile and run SystemVerilog simulations"
+	@echo "  python-test    - Run Python property-based tests"
+	@echo "  test           - Run both Python tests and SystemVerilog simulations"
+	@echo "  test-unit      - Run unit tests"
+	@echo "  test-integration - Run integration tests"
+	@echo "  test-lint      - Run linting checks"
+	@echo "  test-all       - Run all tests and checks"
+	@echo "  clean          - Clean build artifacts"
 	@echo ""
 	@echo "Usage examples:"
 	@echo "  make generate DESIGN=example/counter.v MODULE_NAME=counter"
 	@echo "  make test DESIGN=example/multiplier_pipe.v MODULE_NAME=multiplier_pipe"
+	@echo "  make test-all"
 
 # Generate test files
 generate:
@@ -64,6 +69,31 @@ test: generate
 	$(MAKE) sim DESIGN=$(DESIGN) MODULE_NAME=$(MODULE_NAME)
 	@echo "== All tests complete"
 
+# Unit tests
+test-unit:
+	@echo "Running unit tests..."
+	poetry run pytest tests/ -m "not integration" --cov=svapy --cov-report=term-missing
+
+# Integration tests
+test-integration:
+	@echo "Running integration tests..."
+	poetry run pytest tests/ -m "integration" --cov=svapy --cov-append --cov-report=term-missing
+
+# Linting
+test-lint:
+	@echo "Running linting checks..."
+	poetry run flake8 svapy/ tests/ --count --select=E9,F63,F7,F82 --show-source --statistics
+	poetry run flake8 svapy/ tests/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+# All tests
+test-all: test-lint test-unit test-integration
+	@echo "All tests completed!"
+
 clean:
 	rm -rf $(BUILD_DIR)
 	rm -rf gen/
+	rm -rf .pytest_cache/
+	rm -rf .coverage
+	rm -rf htmlcov/
+	rm -rf dist/
+	rm -rf *.egg-info/
