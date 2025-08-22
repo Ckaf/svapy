@@ -161,7 +161,7 @@ jobs:
       run: poetry build
     
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: dist
         path: dist/
@@ -175,35 +175,29 @@ jobs:
     - uses: actions/checkout@v4
     
     - name: Download build artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: dist
         path: dist/
     
     - name: Create Release
       id: create_release
-      uses: actions/create-release@v1
+      uses: softprops/action-gh-release@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN || secrets.GITHUB_TOKEN }}
       with:
-        tag_name: v${{ github.run_number }}
-        release_name: Release v${{ github.run_number }}
+        tag_name: v${{ github.sha }}
+        name: Release ${{ github.sha }}
         body: |
           Automated release from CI/CD pipeline
           
+          Commit: ${{ github.sha }}
           Changes in this release:
           - Automated build and test verification
           - Code coverage reporting
           - Integration test validation
         draft: false
         prerelease: false
-    
-    - name: Upload Release Assets
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./dist/svapy-${{ github.run_number }}.tar.gz
-        asset_name: svapy-${{ github.run_number }}.tar.gz
-        asset_content_type: application/gzip
+        files: |
+          dist/*.tar.gz
+        generate_release_notes: true
