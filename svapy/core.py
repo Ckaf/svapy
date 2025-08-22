@@ -1,11 +1,11 @@
-import datetime
 import os
 from datetime import datetime
+from typing import Dict, Any, List
 from jinja2 import Environment, FileSystemLoader, Template
 
 from pyverilog.vparser.ast import Input, Output, Inout
 
-def get_template_environment():
+def get_template_environment() -> Environment:
     """
     Creates and returns a Jinja2 template environment
     
@@ -20,7 +20,7 @@ def get_template_environment():
     )
     return env
 
-def generate_module_docstring(module_name, ports_info):
+def generate_module_docstring(module_name: str, ports_info: Dict[str, Dict[str, Any]]) -> str:
     """
     Generates a Python docstring describing a Verilog module using Jinja2 template
     
@@ -39,15 +39,15 @@ def generate_module_docstring(module_name, ports_info):
     
     return template.render(context)
 
-def generate_module(module_name, ports_info):
+def generate_module(module_name: str, ports_info: Dict[str, Dict[str, Any]]) -> str:
     """
     Generates Python code for a function drive_<module_name> with Verilog bit-level representation
     and adds output value assertions only when output sequence is not None.
     Uses Jinja2 template for code generation.
     """
-    input_ports = [p for p, info in ports_info.items() if info['direction'].__name__ == 'Input']
-    output_ports = [p for p, info in ports_info.items() if info['direction'].__name__ == 'Output']
-    all_ports = input_ports + output_ports
+    input_ports: List[str] = [p for p, info in ports_info.items() if info['direction'].__name__ == 'Input']
+    output_ports: List[str] = [p for p, info in ports_info.items() if info['direction'].__name__ == 'Output']
+    all_ports: List[str] = input_ports + output_ports
 
     env = get_template_environment()
     template = env.get_template('module_interface.j2')
@@ -63,17 +63,17 @@ def generate_module(module_name, ports_info):
     
     return template.render(context)
 
-def generate_runner(module_name, ports_info):
+def generate_runner(module_name: str, ports_info: Dict[str, Dict[str, Any]]) -> str:
     """
     Generates proper Hypothesis-based test runner with correct property-based testing approach.
     Uses Jinja2 template for code generation.
     """
-    input_ports = [p for p, info in ports_info.items() if info['direction'].__name__ == 'Input']
-    output_ports = [p for p, info in ports_info.items() if info['direction'].__name__ == 'Output']
-    all_ports = input_ports + output_ports
+    input_ports: List[str] = [p for p, info in ports_info.items() if info['direction'].__name__ == 'Input']
+    output_ports: List[str] = [p for p, info in ports_info.items() if info['direction'].__name__ == 'Output']
+    all_ports: List[str] = input_ports + output_ports
 
     # Calculate maximum values for each port
-    port_max_values = {}
+    port_max_values: Dict[str, int] = {}
     for port, info in ports_info.items():
         if info['width'] > 1:
             port_max_values[port] = (1 << info['width']) - 1
