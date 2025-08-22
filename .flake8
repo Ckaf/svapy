@@ -28,3 +28,4 @@ ignore =
 per-file-ignores =
     __init__.py:F401
     tests/__init__.py:F401
+    svapy/parser.py:C901

@@ -24,7 +24,7 @@ help:
 	@echo "  test           - Run both Python tests and SystemVerilog simulations"
 	@echo "  test-unit      - Run unit tests"
 	@echo "  test-integration - Run integration tests"
-	@echo "  test-lint      - Run linting checks"
+	@echo "  test-lint      - Run linting and type checking"
 	@echo "  test-all       - Run all tests and checks"
 	@echo "  clean          - Clean build artifacts"
 	@echo ""
@@ -84,6 +84,8 @@ test-lint:
 	@echo "Running linting checks..."
 	poetry run flake8 svapy/ tests/ --count --select=E9,F63,F7,F82 --show-source --statistics
 	poetry run flake8 svapy/ tests/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+	@echo "Running type checking..."
+	poetry run mypy svapy/ --show-error-codes --strict
 
 # All tests
 test-all: test-lint test-unit test-integration

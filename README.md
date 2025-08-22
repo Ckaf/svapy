@@ -20,6 +20,7 @@ Svapy creates the foundation for property-based testing of your Verilog modules:
 - **Property-Based Testing Foundation**: Uses Hypothesis to generate thousands of test vectors, while you specify what properties to verify
 - **Waveform Analysis**: Generates VCD files for detailed signal analysis and debugging
 - **Multiple Test Strategies**: Supports different input generation strategies (random, constrained, etc.)
+- **Type Safety**: Full static type checking with Mypy for robust code quality
 - **Extensible Architecture**: Easy to add custom test patterns and verification strategies
 
 ## Quick Start
@@ -165,6 +166,7 @@ endmodule
 - **hypothesis** - Property-based testing framework
 - **pytest** - Test execution and reporting
 - **vcdvcd** - VCD file parsing and analysis
+- **mypy** - Static type checking for Python code
 
 ## Development
 
@@ -179,7 +181,7 @@ make test-all
 # Run specific test types
 make test-unit      # Unit tests only
 make test-integration  # Integration tests only
-make test-lint      # Code linting
+make test-lint      # Code linting and type checking
 ```
 
 See [tests/README.md](tests/README.md) for detailed testing information.
@@ -207,7 +209,7 @@ The project uses GitHub Actions for continuous integration:
 - **Automated Testing**: Runs on every push and pull request
 - **Multi-Python Support**: Tests on Python 3.12 and 3.13
 - **Code Coverage**: Generates coverage reports
-- **Linting**: Automated code quality checks
+- **Linting & Type Checking**: Automated code quality and type safety checks
 - **Build Verification**: Validates generated code
 - **Automated Releases**: Creates releases on main branch pushes
 
