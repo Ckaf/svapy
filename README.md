@@ -33,23 +33,43 @@ poetry install
 
 ### Basic Usage
 
+#### Using Makefile (Recommended)
+
+```bash
+# Generate tests and run all verifications
+make test DESIGN=example/counter.v MODULE_NAME=counter
+
+# Or step by step:
+make generate DESIGN=example/counter.v MODULE_NAME=counter  # Generate test files
+make python-test DESIGN=example/counter.v MODULE_NAME=counter  # Run Python tests
+make sim DESIGN=example/counter.v MODULE_NAME=counter  # Run SystemVerilog simulations
+
+# See all available commands
+make help
+```
+
+#### Using Command Line Directly
+
 ```bash
 # Generate tests for your Verilog module
 poetry run python main.py counter example/counter.v
+
+# Run Python property-based tests
+poetry run python -m pytest gen/run_counter.py
+
+# Run SystemVerilog simulations (requires iverilog)
+make sim DESIGN=example/counter.v MODULE_NAME=counter
 ```
 
-This single command generates:
+This generates:
 - **Python Interface**: `gen/counter_interface.py` - Functions to drive your module
 - **Test Runner**: `gen/run_counter.py` - Property-based test suite
 - **Testbenches**: `gen/tests/counter_tb_*.sv` - SystemVerilog testbenches
 - **Waveforms**: `gen/dump/counter_tb_*.vcd` - VCD files for waveform analysis
 
-### Running Your Tests
+**Note**: The generated Python tests currently pass without assertions. You need to add your own property assertions to verify the hardware behavior.
 
-```bash
-# Execute the generated test suite
-poetry run python gen/run_counter.py
-```
+**Pro tip**: Use `make test` to automatically generate files and run all tests in the correct order!
 
 ## Example: Testing a Counter Module
 
